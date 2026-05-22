@@ -77,17 +77,31 @@ st.plotly_chart(fig1, use_container_width=True)
 # -------------------------
 # TOP PEAK LOADS
 # -------------------------
+# -------------------------
+# TOP PEAK LOADS
+# -------------------------
+
 st.subheader("⚡ Top Peak Load Timings")
 
 peak = load.groupby('READ_DTTM')['READS'].max().reset_index()
 
 peak = peak.sort_values(by='READS', ascending=False).head(10)
 
+# Convert datetime to readable string
+peak['Time'] = peak['READ_DTTM'].dt.strftime('%d-%m-%Y %H:%M')
+
 fig2 = px.bar(
     peak,
-    x='READ_DTTM',
+    x='Time',
     y='READS',
+    color='READS',
     title='Top Peak Load Events'
+)
+
+fig2.update_layout(
+    xaxis_title="Date & Time",
+    yaxis_title="Peak Load",
+    xaxis_tickangle=-45
 )
 
 st.plotly_chart(fig2, use_container_width=True)
