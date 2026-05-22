@@ -139,20 +139,57 @@ st.success(
 # -------------------------
 # METER ANALYSIS
 # -------------------------
-st.subheader("🔌 Meter-wise Consumption")
+# -------------------------------
+# METER-WISE CONSUMPTION ANALYSIS
+# -------------------------------
 
-meter = load.groupby('METER_NUMBER')['READS'].mean().reset_index()
+st.subheader("🔌 Meter-wise Consumption Analysis")
 
+# Total consumption by meter
+meter = load.groupby('METER_NUMBER')['READS'].sum().reset_index()
+
+# Sort descending
 meter = meter.sort_values(by='READS', ascending=False).head(10)
 
+# Create colorful chart
 fig3 = px.bar(
     meter,
     x='METER_NUMBER',
     y='READS',
-    title='Top Consuming Meters'
+    color='READS',
+    text='READS',
+    title='Top Energy Consuming Meters'
 )
 
+# Improve design
+fig3.update_layout(
+    xaxis_title='Meter Number',
+    yaxis_title='Total Energy Consumption',
+    xaxis_tickangle=-45,
+    template='plotly_dark'
+)
+
+# Show values
+fig3.update_traces(
+    texttemplate='%{text:.2f}',
+    textposition='outside'
+)
+
+# Display graph
 st.plotly_chart(fig3, use_container_width=True)
+
+# Smart insight
+top_meter = meter.iloc[0]
+
+st.warning(
+    f"""
+    ⚠️ Meter {top_meter['METER_NUMBER']} recorded the highest electricity usage 
+    with total consumption of {round(top_meter['READS'],2)} units.
+
+    This meter may belong to a high-demand consumer or commercial load 
+    and can be monitored for dynamic pricing or anomaly detection.
+    """
+)
 
 # -------------------------
 # AI/ML USE CASE SECTION
