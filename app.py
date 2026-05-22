@@ -85,44 +85,41 @@ st.plotly_chart(fig1, use_container_width=True)
 # TOP PEAK LOADS
 # -------------------------
 
-st.subheader("⚡ Top Peak Load Timings")
+# -------------------------------
+# PEAK HOUR ANALYSIS
+# -------------------------------
 
-# Find highest peak loads
-peak = load.groupby('READ_DTTM')['READS'].max().reset_index()
+st.subheader("⏰ Peak Hour Analysis")
 
-# Sort descending
-peak = peak.sort_values(by='READS', ascending=False).head(10)
+# Extract hour
+load['Hour'] = load['READ_DTTM'].dt.hour
 
-# Convert datetime to readable format
-peak['Time'] = peak['READ_DTTM'].dt.strftime('%d-%m-%Y %H:%M')
+# Average load by hour
+hourly = load.groupby('Hour')['READS'].mean().reset_index()
 
-# Create colorful bar chart
-fig2 = px.bar(
-    peak,
-    x='Time',
+# Create chart
+fig_hour = px.line(
+    hourly,
+    x='Hour',
     y='READS',
-    color='Time',
-    text='READS',
-    title='Top Peak Load Events'
+    markers=True,
+    title='Average Load by Hour of Day'
 )
 
-# Update layout
-fig2.update_layout(
-    xaxis_title="Date & Time",
-    yaxis_title="Peak Load (kW)",
-    xaxis_tickangle=-45,
-    showlegend=False,
-    template='plotly_dark'
+fig_hour.update_layout(
+    xaxis_title='Hour of Day',
+    yaxis_title='Average Load',
 )
 
-# Show values on bars
-fig2.update_traces(
-    texttemplate='%{text:.2f}',
-    textposition='outside'
-)
+st.plotly_chart(fig_hour, use_container_width=True)
 
-# Display chart
-st.plotly_chart(fig2, use_container_width=True)
+# Find peak hour
+peak_hour = hourly.loc[hourly['READS'].idxmax()]
+
+st.success(
+    f"Highest electricity usage occurs around {int(peak_hour['Hour'])}:00 hours "
+    f"with average load of {round(peak_hour['READS'],2)}"
+)
 
 # -------------------------
 # METER ANALYSIS
