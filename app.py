@@ -77,25 +77,20 @@ st.plotly_chart(fig1, use_container_width=True)
 # -------------------------
 # TOP PEAK LOADS
 # -------------------------
-# -------------------------
-# TOP PEAK LOADS
-# -------------------------
-
-# -------------------------
-# TOP PEAK LOADS
-# -------------------------
-
 # -------------------------------
 # PEAK HOUR ANALYSIS
 # -------------------------------
 
 st.subheader("⏰ Peak Hour Analysis")
 
-# Extract hour
+# Extract hour from datetime
 load['Hour'] = load['READ_DTTM'].dt.hour
 
-# Average load by hour
+# Average load for each hour
 hourly = load.groupby('Hour')['READS'].mean().reset_index()
+
+# Find peak hour
+peak_hour = hourly.loc[hourly['READS'].idxmax()]
 
 # Create chart
 fig_hour = px.line(
@@ -106,19 +101,39 @@ fig_hour = px.line(
     title='Average Load by Hour of Day'
 )
 
+# Improve chart design
 fig_hour.update_layout(
-    xaxis_title='Hour of Day',
-    yaxis_title='Average Load',
+    xaxis_title='Hour of Day (0 = 12 AM, 23 = 11 PM)',
+    yaxis_title='Average Electricity Load',
+    template='plotly_dark'
 )
 
+# Highlight peak point
+fig_hour.add_scatter(
+    x=[peak_hour['Hour']],
+    y=[peak_hour['READS']],
+    mode='markers+text',
+    text=['Peak Load'],
+    textposition='top center',
+    marker=dict(size=15, color='red'),
+    name='Peak Hour'
+)
+
+# Show chart
 st.plotly_chart(fig_hour, use_container_width=True)
 
-# Find peak hour
-peak_hour = hourly.loc[hourly['READS'].idxmax()]
-
+# Smart Insight
 st.success(
-    f"Highest electricity usage occurs around {int(peak_hour['Hour'])}:00 hours "
-    f"with average load of {round(peak_hour['READS'],2)}"
+    f"""
+    🔥 Highest electricity consumption occurs around 
+    {int(peak_hour['Hour'])}:00 hours 
+    with an average load of 
+    {round(peak_hour['READS'],2)} units.
+    
+    This time period can be considered a PEAK LOAD WINDOW 
+    where dynamic pricing can help utility companies 
+    increase revenue and reduce overload demand.
+    """
 )
 
 # -------------------------
